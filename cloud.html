@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MY클라우드 — 권서진</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f4f0;
+  --surface: #ffffff;
+  --surface2: #f0efe9;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.14);
+  --text: #1a1a1a;
+  --text2: #666;
+  --text3: #999;
+  --blue: #3B82F6;
+  --blue-bg: #EFF6FF;
+  --blue-text: #1D4ED8;
+  --red: #EF4444;
+  --red-bg: #FEF2F2;
+  --red-text: #B91C1C;
+  --amber-bg: #FFFBEB;
+  --amber-text: #92400E;
+  --gray-bg: #F9FAFB;
+  --gray-text: #6B7280;
+  --folder: #FBBF24;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.os-bar {
+  background: var(--surface);
+  border-bottom: 0.5px solid var(--border2);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text3);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.os-logo {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.os-logo-icon {
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, #60A5FA, #3B82F6);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.os-logo-icon svg { width: 13px; height: 13px; fill: white; }
+.os-sep { color: var(--border2); }
+.os-path { color: var(--text2); }
+.os-path span { color: var(--text); font-weight: 500; }
+.os-spacer { flex: 1; }
+.os-user {
+  background: var(--surface2);
+  border-radius: 20px;
+  padding: 3px 10px 3px 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text2);
+}
+.os-avatar {
+  width: 18px; height: 18px;
+  background: #DBEAFE;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 500; color: #1D4ED8;
+}
+
+.main {
+  flex: 1;
+  max-width: 780px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 24px 20px 60px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.toolbar-btn {
+  font-size: 12px;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text2);
+  background: var(--surface);
+  border: 0.5px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 5px 12px;
+  cursor: default;
+}
+.tb-spacer { flex: 1; }
+.file-count { font-size: 12px; color: var(--text3); }
+
+.file-list {
+  background: var(--surface);
+  border: 0.5px solid var(--border2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.list-header {
+  display: grid;
+  grid-template-columns: 1fr 90px 70px;
+  padding: 7px 16px;
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--surface2);
+  border-bottom: 0.5px solid var(--border);
+  letter-spacing: 0.03em;
+}
+
+.section-divider {
+  font-size: 10px;
+  color: var(--text3);
+  padding: 5px 16px 4px;
+  background: var(--surface2);
+  border-bottom: 0.5px solid var(--border);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.file-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 70px;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 0.5px solid var(--border);
+  cursor: pointer;
+  transition: background 0.12s;
+  user-select: none;
+}
+.file-row:last-child { border-bottom: none; }
+.file-row:hover { background: #fafaf7; }
+.file-row.active { background: #EFF6FF; }
+
+.row-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.folder-icon {
+  width: 22px; height: 18px;
+  background: var(--folder);
+  border-radius: 0 4px 4px 4px;
+  flex-shrink: 0;
+  position: relative;
+}
+.folder-icon::before {
+  content: '';
+  position: absolute;
+  top: -4px; left: 0;
+  width: 9px; height: 5px;
+  background: var(--folder);
+  border-radius: 3px 3px 0 0;
+}
+
+.txt-icon {
+  width: 18px; height: 22px;
+  background: #EFF6FF;
+  border: 0.5px solid #BFDBFE;
+  border-radius: 3px;
+  flex-shrink: 0;
+  position: relative;
+}
+.txt-icon::after {
+  content: '';
+  position: absolute;
+  top: 4px; left: 3px; right: 3px;
+  height: 1px;
+  background: #BFDBFE;
+  box-shadow: 0 3px 0 #BFDBFE, 0 6px 0 #BFDBFE, 0 9px 0 #BFDBFE;
+}
+
+.row-name {
+  font-size: 13px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.b-red { background: var(--red-bg); color: var(--red-text); }
+.b-amber { background: var(--amber-bg); color: var(--amber-text); }
+.b-blue { background: var(--blue-bg); color: var(--blue-text); }
+.b-gray { background: var(--gray-bg); color: var(--gray-text); }
+
+.row-date { font-size: 12px; color: var(--text3); text-align: right; }
+.row-size { font-size: 12px; color: var(--text3); text-align: right; }
+
+.detail-area {
+  margin-top: 16px;
+  background: var(--surface);
+  border: 0.5px solid var(--border2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: none;
+  animation: fadeIn 0.15s ease;
+}
+.detail-area.open { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--surface2);
+}
+.detail-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+.detail-close {
+  font-size: 11px;
+  color: var(--text3);
+  cursor: pointer;
+  padding: 3px 8px;
+  border: 0.5px solid var(--border2);
+  border-radius: 5px;
+  background: var(--surface);
+}
+.detail-close:hover { background: var(--surface2); }
+
+.detail-body {
+  padding: 14px 16px;
+  font-size: 12px;
+  line-height: 2;
+  color: var(--text2);
+  font-family: 'JetBrains Mono', monospace;
+  white-space: pre-wrap;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.detail-body::-webkit-scrollbar { width: 4px; }
+.detail-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.storage-section {
+  margin-top: 20px;
+  padding: 0 2px;
+}
+.storage-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.storage-label { font-size: 11px; color: var(--text3); }
+.storage-num { font-size: 11px; color: var(--text3); }
+.storage-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.storage-fill {
+  height: 100%;
+  width: 23%;
+  background: var(--blue);
+  border-radius: 2px;
+}
+
+.notice {
+  margin-top: 28px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.8;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div class="os-bar">
+  <div class="os-logo">
+    <div class="os-logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+    </div>
+    MY클라우드
+  </div>
+  <span class="os-sep">/</span>
+  <span class="os-path">내 파일 / <span>권서진_자료_20XX</span></span>
+  <div class="os-spacer"></div>
+  <div class="os-user">
+    <div class="os-avatar">권</div>
+    서진
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="toolbar">
+    <button class="toolbar-btn">새 폴더</button>
+    <button class="toolbar-btn">업로드</button>
+    <button class="toolbar-btn">정렬 ∨</button>
+    <div class="tb-spacer"></div>
+    <span class="file-count">항목 7개</span>
+  </div>
+
+  <div class="file-list">
+    <div class="list-header">
+      <span>이름</span>
+      <span style="text-align:right">수정일</span>
+      <span style="text-align:right">크기</span>
+    </div>
+
+    <div class="section-divider">폴더</div>
+
+    <div class="file-row" onclick="toggle('msg', this)">
+      <div class="row-left">
+        <div class="folder-icon"></div>
+        <span class="row-name">01_문자캡처 <span class="badge b-red">중요</span></span>
+      </div>
+      <span class="row-date">2월 11일</span>
+      <span class="row-size">—</span>
+    </div>
+
+    <div class="file-row" onclick="toggle('kids', this)">
+      <div class="row-left">
+        <div class="folder-icon"></div>
+        <span class="row-name">02_아이들 <span class="badge b-red">중요</span></span>
+      </div>
+      <span class="row-date">2월 9일</span>
+      <span class="row-size">—</span>
+    </div>
+
+    <div class="file-row" onclick="toggle('store', this)">
+      <div class="row-left">
+        <div class="folder-icon"></div>
+        <span class="row-name">03_가게내부 <span class="badge b-amber">참고</span></span>
+      </div>
+      <span class="row-date">1월 30일</span>
+      <span class="row-size">—</span>
+    </div>
+
+    <div class="file-row" onclick="toggle('house', this)">
+      <div class="row-left">
+        <div class="folder-icon"></div>
+        <span class="row-name">04_아이들_거주지 <span class="badge b-red">중요</span></span>
+      </div>
+      <span class="row-date">2월 9일</span>
+      <span class="row-size">—</span>
+    </div>
+
+    <div class="file-row" onclick="toggle('org', this)">
+      <div class="row-left">
+        <div class="folder-icon"></div>
+        <span class="row-name">05_조직관련 <span class="badge b-red">중요</span></span>
+      </div>
+      <span class="row-date">2월 11일</span>
+      <span class="row-size">—</span>
+    </div>
+
+    <div class="file-row" onclick="toggle('victim', this)">
+      <div class="row-left">
+        <div class="folder-icon"></div>
+        <span class="row-name">06_피해기록 <span class="badge b-gray">기록용</span></span>
+      </div>
+      <span class="row-date">2월 3일</span>
+      <span class="row-size">—</span>
+    </div>
+
+    <div class="section-divider">파일</div>
+
+    <div class="file-row" onclick="toggle('memo', this)">
+      <div class="row-left">
+        <div class="txt-icon"></div>
+        <span class="row-name">메모.txt <span class="badge b-blue">텍스트</span></span>
+      </div>
+      <span class="row-date">2월 11일</span>
+      <span class="row-size">1 KB</span>
+    </div>
+  </div>
+
+  <div class="detail-area" id="detail-area">
+    <div class="detail-head">
+      <span class="detail-title" id="detail-title"></span>
+      <span class="detail-close" onclick="closeDetail()">닫기</span>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+
+  <div class="storage-section">
+    <div class="storage-row">
+      <span class="storage-label">저장공간</span>
+      <span class="storage-num">2.3 GB / 10 GB</span>
+    </div>
+    <div class="storage-bar">
+      <div class="storage-fill"></div>
+    </div>
+  </div>
+
+  <div class="notice">
+    이 페이지는 소설 「——」의 세계관 자료입니다.<br>
+    모든 내용은 허구이며 실제 인물·사건과 관계없습니다.
+  </div>
+
+</div>
+
+<script>
+const contents = {
+  msg: {
+    title: "01_문자캡처 — 주요 메시지 목록",
+    body: `[최성재 → 권서진]
+
+20XX.12.03  "내일 안 튀어오면 갈비뼈 다 으깨서 개밥으로 던져준다"
+20XX.12.15  "팁 삥땅치면 그날로 애들 싹 정리한다"
+20XX.01.22  "43층 사는 놈 알지? 달에 천 입금해"
+20XX.02.08  "공범인 거 알 거고. 애새끼들 곧 넘길 거니까
+             오천 준비해"
+20XX.02.09  "나 혼자면 2500인데 너까지 데려가니까.
+             배편 알아볼 테니 입금해"
+20XX.02.11  "짭새 새끼 붙은 모양인데 네가 찌른 건 아니겠지 ㅋ"
+
+─────────────────────────────
+
+[차상철 → 권서진]
+
+20XX.02.07  "하나당 일곱 장에 판다더니 나한테 고작 500.
+             왜 내가 이 고생을"
+20XX.02.07  "형님 소식 없어? 거래 타이밍인데 연락도 안 됨"`
+  },
+  kids: {
+    title: "02_아이들 — 현황 메모",
+    body: `윤주      / 추정 9세  / 최초 입소 20XX년경
+           모친 불법체류자 추정
+민수      / 5세      / 20XX.03월경 입소 / 입소 경위 불명
+이름없음_1 / 추정 7세  / 20XX년경
+이름없음_2 / 추정 6세  / 20XX년경
+신생아_A   / 20XX.02.05 투입 / 성별 남 추정
+신생아_B   / 20XX.02.05 투입 / 성별 여 추정
+
+→ 쌍둥이라고 했으나 외모·피부색 상이.
+  동일 출생 아닌 것으로 추정
+→ 투입 당일 최성재 직접 데려옴.
+  차상철 사전 고지 없었다고 함
+→ 신생아 A : 황달 증상 있었음. 병원 데려가지 않음
+→ 신생아 B : 수유량 부족으로 계속 울었음
+
+─────────────────────────────
+[사진 폴더]
+20XX.09 ~ 20XX.02  월별 전신사진
+방치 상태 기록사진 (기저귀 미교체, 식사 미제공)
+20XX.02.05  신생아 투입 직후 촬영본 2장
+이름표 들고 찍은 얼굴사진 (6명 전원)`
+  },
+  store: {
+    title: "03_가게내부 — 운영 구조 메모",
+    body: `[스캔들 내부 구조]
+지하 1층
+입구 → 홀 → 대기실(최성재 상주) → 룸 1~25호
+룸 13호 : 심OO 전용 (매주 목·토 고정 방문)
+룸 1호  : VIP용. 조직원 단체 이용
+CCTV    : 홀 2대, 대기실 1대. 룸 내부 없음
+
+─────────────────────────────
+[운영 관련]
+공식 매출과 실제 매출 차이 있음
+카드 결제는 일부만. 현금 결제분 별도 장부 추정
+20XX.01 기준 하루 평균 룸 가동 15~18개
+웨이터 급여 : 공식 계약서 없음. 현금 지급
+가짜 양주 원가 3만원대 → 손님 청구 25~35만원
+
+─────────────────────────────
+[심OO 별도 메모]
+매주 2회 방문. 1회 평균 지출 200~400만원
+'루이' 호칭 강요. 가학적 행위 반복
+20XX.01.XX 동반 여성 4인과 집단 추행 발생`
+  },
+  house: {
+    title: "04_아이들_거주지 — 장소 내부 기록",
+    body: `[주소 및 위치]
+B-10 재개발 구역 내 노후 주택
+재개발 무산 구역. 가로등 없음. 사실상 폐촌.
+언덕 경사 급함. 차량 진입 불가 구간 있음.
+외부에서 내부 기척 확인 불가 (암막 커튼)
+출입구 1개. 내부에서 잠금 가능. 비상구 없음.
+
+─────────────────────────────
+[내부 구조]
+방 2개 + 좁은 주방 + 화장실 1개
+방 1 : 아이들 거주. 2층 침대 2개. 바닥 매트 1개.
+방 2 : 차상철 상주 (현재 잠적).
+주방 : 가스레인지 1구. 냉장고 노후. 환풍기 없음.
+화장실 : 욕조 없음. 샤워기만. 온수 불안정.
+
+─────────────────────────────
+[생활 환경]
+난방 : 전기장판 1개 (방 1 공용)
+식수 : 수돗물. 정수기 없음.
+환기 : 창문 개폐만 가능. 벽면 곰팡이 흔적 다수.
+채광 : 북향. 낮에도 어두움.
+
+─────────────────────────────
+[방치 정황 기록]
+20XX.02.07  차상철 잠적 후 아이들 단독 방치 확인
+            냉장고 식재료 거의 없음
+            기저귀 재고 3개 (신생아 2명 하루치 미만)
+            윤주(추정 9세)가 신생아 수유 담당하고 있었음`
+  },
+  org: {
+    title: "05_조직관련 — 연락처 및 거래 메모",
+    body: `[외부 연락처]
+'도매형' : 주류 납품 관련 통화. 010-XXXX-XXXX
+'팀장'   : 조직원 지시 전달자 추정. 직접 대면 없음
+'미진'   : 최성재와 얽힌 여성. 가게 실세급
+차상철   : 아이들 관리 담당. 20XX.02.XX 잠적
+
+─────────────────────────────
+[아이들 거래 관련]
+"하나당 일곱 장" = 700만원 추정 (차상철 문자 참고)
+거래 상대방 신원 불명. 최성재가 직접 처리
+20XX 초 아이 1명 행방불명
+→ 질문했다가 폭행당함
+신생아 2명 추가 투입 = 거래 임박 신호로 추정
+
+─────────────────────────────
+[최성재 행동 패턴]
+평소 가게 대기실 상주
+매주 화·금 외부 미팅 (장소 불명)
+20XX.01월 이후 외부 미팅 횟수 증가
+20XX.02월부터 연락 불규칙. 가게 출근 줄어듦
+밀항 관련 발언 "배편 알아본다" (문자 캡처 있음)`
+  },
+  victim: {
+    title: "06_피해기록",
+    body: `[폭행 기록]
+20XX.12.03  뺨 양측 타격, 머리채 잡아 흔듦
+            사유 - 지각
+20XX.12.15  머리 가격 반복
+            사유 - 팁 수거 지연 의심
+20XX.01.08  전신 타격. 벨트로 손목 결박. 성적 강요 미수
+            → 미진 개입으로 중단. 목격자 있음
+20XX.01.22  뺨 타격 / 사유 - 카드 결제 건 추궁
+20XX.02.03  뒤통수 가격 / 사유 불명
+
+─────────────────────────────
+[성적 피해]
+심OO에 의한 반복적 신체 접촉·가학 행위
+20XX.01.08  최성재에 의한 강제추행·강간미수
+
+─────────────────────────────
+[기타]
+병원 기록 없음. 모든 치료 비공식 경로.
+20XX.12월 초 : 갈비뼈 실금, 뇌진탕, 탈진, 고열
+→ 정대호 동행하에 비공식 치료.
+  담당 의사 신원 확인 가능
+
+(이건 별로 중요하지 않을 수도 있음. 그냥 적어둔 거예요.)`
+  },
+  memo: {
+    title: "메모.txt",
+    body: `이걸 누가 볼지 모르겠는데.
+
+나는 아무것도 안 했다고 생각하는데
+그게 맞는지 모르겠어서 적어뒀어요.
+
+애들은 잘못 없어요.
+빨리 좋은 데 가면 좋겠어요.
+
+권서진`
+  }
+};
+
+let currentKey = null;
+
+function toggle(key, row) {
+  const area = document.getElementById('detail-area');
+  const prevActive = document.querySelector('.file-row.active');
+
+  if (currentKey === key) {
+    area.classList.remove('open');
+    row.classList.remove('active');
+    currentKey = null;
+    return;
+  }
+
+  if (prevActive) prevActive.classList.remove('active');
+  row.classList.add('active');
+
+  document.getElementById('detail-title').textContent = contents[key].title;
+  document.getElementById('detail-body').textContent = contents[key].body;
+
+  area.classList.remove('open');
+  void area.offsetWidth;
+  area.classList.add('open');
+
+  currentKey = key;
+
+  setTimeout(() => {
+    area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+}
+
+function closeDetail() {
+  document.getElementById('detail-area').classList.remove('open');
+  const active = document.querySelector('.file-row.active');
+  if (active) active.classList.remove('active');
+  currentKey = null;
+}
+</script>
+</body>
+</html>
